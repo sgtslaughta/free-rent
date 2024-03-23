@@ -21,7 +21,7 @@ CREATE TABLE lease (
     lease_end_date DATE NOT NULL COMMENT 'End date of the lease',
     monthly_rent DECIMAL(10, 2) NOT NULL COMMENT 'Monthly rent amount',
     lease_term ENUM('month-to-month', 'fixed-term') NOT NULL COMMENT 'Type of lease term',
-    fixed_term_length INT COMMENT ‘How many months the term is’,
+    fixed_term_length INT,
     term_end DATE COMMENT 'End date of the lease term (if applicable)',
     deposit DECIMAL(10, 2) COMMENT 'Deposit amount',
     first_last_amount DECIMAL(10, 2) COMMENT 'First/last month rent paid',
@@ -29,7 +29,7 @@ CREATE TABLE lease (
     payment_due_date INT COMMENT 'Day of the month when rent is due',
     late_fee DECIMAL(5, 2) COMMENT 'Late fee amount',
     lease_notes TEXT COMMENT 'Additional notes or comments related to the lease',
-    FOREIGN KEY (unit_number) REFERENCES unit(id)
+    FOREIGN KEY (unit_id) REFERENCES unit(id)
 );
 
 CREATE TABLE property (
@@ -73,9 +73,10 @@ CREATE TABLE unit (
     notes TEXT COMMENT 'Additional notes or comments related to the unit',
     FOREIGN KEY (property_id) REFERENCES property(id),
     FOREIGN KEY (unit_type_id) REFERENCES unit_type(id),
-    FOREIGN KEY (tenant_id) REFERENCES tenant(id),
-    FOREIGN KEY (lease_id) REFERENCES lease(id)
+    FOREIGN KEY (tenant_id) REFERENCES tenant(id)
 );
+
+    FOREIGN KEY (lease_id) REFERENCES lease(id)
 
 CREATE TABLE unit_type (
     id INT AUTO_INCREMENT PRIMARY KEY COMMENT 'Unique identifier for each unit type',
@@ -88,8 +89,8 @@ CREATE TABLE unit_type (
     exterior_type VARCHAR(100) COMMENT 'Type of exterior material used for the unit',
     has_washer BOOLEAN COMMENT 'Indicates if the unit type has a washer',
     has_dryer BOOLEAN COMMENT 'Indicates if the unit type has a dryer',
-    range_type ENUM(‘gas’, ‘electric’),
-    furnace_type ENUM(‘gas’, ‘electric’),
+    range_type ENUM('gas', 'electric'),
+    furnace_type ENUM('gas', 'electric'),
     is_furnished BOOLEAN DEFAULT 0,
     date_renovated DATE,
     other_info TEXT COMMENT 'Additional relevant information about the unit type'
@@ -143,8 +144,8 @@ CREATE TABLE fee_tenant (
     id INT NOT NULL COMMENT 'Foreign key referencing the fee associated with the payment',
     tenant_id INT NOT NULL COMMENT 'Foreign key referencing the tenant associated with the payment',
     fee_date_created DATE DEFAULT NOW() COMMENT 'Date when the fee was created',
-    PRIMARY KEY (fee_id, tenant_id),
-    FOREIGN KEY (fee_id) REFERENCES fee(id),
+    PRIMARY KEY (id, tenant_id),
+    FOREIGN KEY (id) REFERENCES fee(id),
     FOREIGN KEY (tenant_id) REFERENCES tenant(id)
 );
 
@@ -152,7 +153,7 @@ CREATE TABLE payment (
     id INT AUTO_INCREMENT PRIMARY KEY COMMENT 'Unique identifier for each payment',
     payer_id INT NOT NULL COMMENT 'Identifier for the payer',
     payment_type ENUM('fee', 'rent', 'other') NOT NULL COMMENT 'Type of payment',
-    payment_method ENUM(‘cash’, ‘credit’, ‘check’, ‘other’) NOT NULL,
+    payment_method ENUM('cash', 'credit', 'check', 'other') NOT NULL,
     amount DECIMAL(10, 2) NOT NULL COMMENT 'Amount of the payment',
     payment_date DATE NOT NULL DEFAULT NOW() COMMENT 'Date when the payment was made',
     notes TEXT COMMENT 'Additional notes or comments related to the payment',
@@ -187,7 +188,7 @@ CREATE TABLE vendor (
     contact_person VARCHAR(100) COMMENT 'Contact person at the vendor company',
     phone_number VARCHAR(20) COMMENT 'Phone number of the vendor',
     email VARCHAR(100) COMMENT 'Email address of the vendor',
-    notes TEXT COMMENT 'Additional notes or comments about the vendor'
+    notes TEXT COMMENT 'Additional notes or comments about the vendor',
     FOREIGN KEY (vendor_type) REFERENCES vendor_type(id)
 );
 
@@ -213,7 +214,7 @@ CREATE TABLE work_order (
     status ENUM('Open', 'In Progress', 'Completed') NOT NULL COMMENT 'Status of the work order',
     completion_date DATE COMMENT 'Date when the work order was completed',
     vendor_id INT COMMENT 'Foreign key referencing the vendor assigned to the work order (if any)',
-    maint_employee_id INT COMMENT ‘The id of internal maintenance employee assigned’,
+    maint_employee_id INT COMMENT 'The id of internal maintenance employee assigned',
     notes TEXT COMMENT 'Additional notes or comments related to the work order',
     FOREIGN KEY (unit_id) REFERENCES unit(id),
     FOREIGN KEY (vendor_id) REFERENCES vendor(id),
@@ -235,7 +236,7 @@ CREATE TABLE expense (
     description TEXT NOT NULL COMMENT 'Description of the expense',
     amount DECIMAL(10, 2) NOT NULL COMMENT 'Amount of the expense',
     category VARCHAR(100) COMMENT 'Category or type of expense',
-    work_order_id INT COMMENT ‘WO ID if related’,
+    work_order_id INT COMMENT 'WO ID if related',
     notes TEXT COMMENT 'Additional notes or comments related to the expense',
     FOREIGN KEY (work_order_id) REFERENCES work_order(id)
 );
