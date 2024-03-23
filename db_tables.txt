@@ -1,0 +1,275 @@
+
+CREATE TABLE tenant (
+    id INT AUTO_INCREMENT PRIMARY KEY COMMENT 'Unique identifier for each tenant',
+    first_name VARCHAR(50) NOT NULL COMMENT 'First name of the tenant',
+    last_name VARCHAR(50) NOT NULL COMMENT 'Last name of the tenant',
+    middle_name VARCHAR(50) NOT NULL COMMENT 'Last name of the tenant',
+    email VARCHAR(100) COMMENT 'Email address of the tenant',
+    phone_number VARCHAR(20) COMMENT 'Phone number of the tenant',
+    cell_number VARCHAR(20) COMMENT 'Cell phone number of the tenant',
+    date_of_birth DATE COMMENT 'Date of birth of the tenant',
+    emergency_contact_name VARCHAR(100) COMMENT 'Name of the tenant\'s emergency contact',
+    emergency_contact_phone VARCHAR(20) COMMENT 'Phone number of the tenant\'s emergency contact',
+    emergency_contact_relationship VARCHAR(100) COMMENT 'Relationship of the emergency contact to the tenant',
+    notes TEXT COMMENT 'Additional notes or comments'
+);
+
+CREATE TABLE lease (
+    id INT AUTO_INCREMENT PRIMARY KEY COMMENT 'Unique identifier for each lease',
+    unit_id INT NOT NULL COMMENT 'Identifier for the unit associated with the lease',
+    lease_start_date DATE NOT NULL COMMENT 'Start date of the lease',
+    lease_end_date DATE NOT NULL COMMENT 'End date of the lease',
+    monthly_rent DECIMAL(10, 2) NOT NULL COMMENT 'Monthly rent amount',
+    lease_term ENUM('month-to-month', 'fixed-term') NOT NULL COMMENT 'Type of lease term',
+    fixed_term_length INT COMMENT ‘How many months the term is’,
+    term_end DATE COMMENT 'End date of the lease term (if applicable)',
+    deposit DECIMAL(10, 2) COMMENT 'Deposit amount',
+    first_last_amount DECIMAL(10, 2) COMMENT 'First/last month rent paid',
+    has_pet BOOLEAN COMMENT 'Indicates if pets are present',
+    payment_due_date INT COMMENT 'Day of the month when rent is due',
+    late_fee DECIMAL(5, 2) COMMENT 'Late fee amount',
+    lease_notes TEXT COMMENT 'Additional notes or comments related to the lease',
+    FOREIGN KEY (unit_number) REFERENCES unit(id)
+);
+
+CREATE TABLE property (
+    id INT AUTO_INCREMENT PRIMARY KEY COMMENT 'Unique identifier for each property',
+    property_name VARCHAR(100) NOT NULL COMMENT 'Name or identifier for the property',
+    address VARCHAR(255) NOT NULL COMMENT 'Street address of the property',
+    city VARCHAR(100) NOT NULL COMMENT 'City where the property is located',
+    state VARCHAR(50) NOT NULL COMMENT 'State or province where the property is located',
+    postal_code VARCHAR(20) NOT NULL COMMENT 'Postal code or ZIP code of the property location',
+    country VARCHAR(100) NOT NULL COMMENT 'Country where the property is located',
+    total_units INT NOT NULL COMMENT 'Total number of units within the property',
+    manager_name VARCHAR(100) COMMENT 'Name of the property manager or management company',
+    manager_email VARCHAR(100) COMMENT 'Email address of the property manager or management company',
+    manager_phone VARCHAR(20) COMMENT 'Phone number of the property manager or management company',
+    notes TEXT COMMENT 'Additional notes or comments'
+);
+
+CREATE TABLE amenity_type (
+    amenity_id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) UNIQUE NOT NULL,
+    description TEXT
+);
+
+CREATE TABLE property_amenities (
+    property_id INT,
+    amenity_id INT,
+    PRIMARY KEY (property_id, amenity_id),
+    FOREIGN KEY (property_id) REFERENCES property(id),
+    FOREIGN KEY (amenity_id) REFERENCES amenity_type(amenity_id)
+);
+
+CREATE TABLE unit (
+    id INT AUTO_INCREMENT PRIMARY KEY COMMENT 'Unique identifier for each unit',
+    unit_number VARCHAR(20) NOT NULL COMMENT 'Identifier for the specific unit within the property',
+    property_id INT NOT NULL COMMENT 'Foreign key referencing the property to which the unit belongs',
+    unit_type_id INT NOT NULL COMMENT 'Foreign key referencing the type of unit',
+    status ENUM('Vacant', 'Occupied', 'Under Maintenance', 'Other') COMMENT 'Current status of the unit',
+    floor_level INT COMMENT 'Floor level of the unit within the property',
+    tenant_id INT COMMENT 'Foreign key referencing the tenant currently occupying the unit (if any)',
+    lease_id INT COMMENT 'Foreign key referencing the lease associated with the unit (if any)',
+    notes TEXT COMMENT 'Additional notes or comments related to the unit',
+    FOREIGN KEY (property_id) REFERENCES property(id),
+    FOREIGN KEY (unit_type_id) REFERENCES unit_type(id),
+    FOREIGN KEY (tenant_id) REFERENCES tenant(id),
+    FOREIGN KEY (lease_id) REFERENCES lease(id)
+);
+
+CREATE TABLE unit_type (
+    id INT AUTO_INCREMENT PRIMARY KEY COMMENT 'Unique identifier for each unit type',
+    unit_style_name TEXT NOT NULL UNIQUE COMMENT 'Name or description of the unit style',
+    bedroom_count INT NOT NULL COMMENT 'Number of bedrooms in the unit type',
+    bathroom_count INT NOT NULL COMMENT 'Number of bathrooms in the unit type',
+    sq_footage INT COMMENT 'Square footage of the unit type',
+    has_balcony BOOLEAN COMMENT 'Indicates if the unit type has a balcony',
+    has_vaulted BOOLEAN COMMENT 'Indicates if the unit type has vaulted ceilings',
+    exterior_type VARCHAR(100) COMMENT 'Type of exterior material used for the unit',
+    has_washer BOOLEAN COMMENT 'Indicates if the unit type has a washer',
+    has_dryer BOOLEAN COMMENT 'Indicates if the unit type has a dryer',
+    range_type ENUM(‘gas’, ‘electric’),
+    furnace_type ENUM(‘gas’, ‘electric’),
+    is_furnished BOOLEAN DEFAULT 0,
+    date_renovated DATE,
+    other_info TEXT COMMENT 'Additional relevant information about the unit type'
+);
+
+CREATE TABLE vehicle (
+    id INT AUTO_INCREMENT PRIMARY KEY COMMENT 'Unique identifier for each vehicle',
+    tenant_id INT NOT NULL COMMENT 'Foreign key referencing the tenant who owns the vehicle',
+    make VARCHAR(50) NOT NULL COMMENT 'Make or manufacturer of the vehicle',
+    model VARCHAR(50) NOT NULL COMMENT 'Model of the vehicle',
+    year INT NOT NULL COMMENT 'Year of manufacture of the vehicle',
+    color VARCHAR(50) COMMENT 'Color of the vehicle',
+    license_plate VARCHAR(20) UNIQUE COMMENT 'License plate number of the vehicle',
+    notes TEXT COMMENT 'Additional notes or comments related to the vehicle',
+    FOREIGN KEY (tenant_id) REFERENCES tenant(id)
+);
+
+CREATE TABLE pet (
+    id INT AUTO_INCREMENT PRIMARY KEY COMMENT 'Unique identifier for each pet',
+    tenant_id INT NOT NULL COMMENT 'Foreign key referencing the tenant who owns the pet',
+    name VARCHAR(50) NOT NULL COMMENT 'Name of the pet',
+    species VARCHAR(50) NOT NULL COMMENT 'Species of the pet',
+    breed VARCHAR(50) COMMENT 'Breed of the pet',
+    age INT COMMENT 'Age of the pet in years',
+    weight DECIMAL(8, 2) COMMENT 'Weight of the pet in pounds',
+    notes TEXT COMMENT 'Additional notes or comments related to the pet',
+    FOREIGN KEY (tenant_id) REFERENCES tenant(id)
+);
+
+CREATE TABLE fee (
+    id INT AUTO_INCREMENT PRIMARY KEY COMMENT 'Unique identifier for each fee',
+    name VARCHAR(100) NOT NULL COMMENT 'Name of the fee',
+    description TEXT COMMENT 'Description or details of the fee',
+    fee_type_id INT NOT NULL,
+    type ENUM('one-time', 'recurring') NOT NULL COMMENT 'Type of the fee',
+    fee_paid BOOLEAN NOT NULL DEFAULT 0 COMMENT 'Indicates if the fee has been paid',
+    date_created DATE NOT NULL DEFAULT NOW(),
+    date_paid DATE,
+    FOREIGN KEY (fee_type_id) REFERENCES fee_type(id)
+    );
+
+CREATE TABLE fee_type (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL UNIQUE,
+    amount DECIMAL(10, 2) NOT NULL COMMENT 'Amount of the fee',
+    UNIQUE KEY (name) COMMENT 'Ensures unique names for fees',
+    description TEXT
+);
+
+CREATE TABLE fee_tenant (
+    id INT NOT NULL COMMENT 'Foreign key referencing the fee associated with the payment',
+    tenant_id INT NOT NULL COMMENT 'Foreign key referencing the tenant associated with the payment',
+    fee_date_created DATE DEFAULT NOW() COMMENT 'Date when the fee was created',
+    PRIMARY KEY (fee_id, tenant_id),
+    FOREIGN KEY (fee_id) REFERENCES fee(id),
+    FOREIGN KEY (tenant_id) REFERENCES tenant(id)
+);
+
+CREATE TABLE payment (
+    id INT AUTO_INCREMENT PRIMARY KEY COMMENT 'Unique identifier for each payment',
+    payer_id INT NOT NULL COMMENT 'Identifier for the payer',
+    payment_type ENUM('fee', 'rent', 'other') NOT NULL COMMENT 'Type of payment',
+    payment_method ENUM(‘cash’, ‘credit’, ‘check’, ‘other’) NOT NULL,
+    amount DECIMAL(10, 2) NOT NULL COMMENT 'Amount of the payment',
+    payment_date DATE NOT NULL DEFAULT NOW() COMMENT 'Date when the payment was made',
+    notes TEXT COMMENT 'Additional notes or comments related to the payment',
+    fee_id INT COMMENT 'Foreign key referencing the fee associated with the payment',
+    FOREIGN KEY (fee_id) REFERENCES fee(id),
+    FOREIGN KEY (payer_id) REFERENCES tenant(id)
+);
+
+CREATE TABLE job_role (
+    id INT AUTO_INCREMENT PRIMARY KEY COMMENT 'Unique identifier for each job role',
+    role_name VARCHAR(100) NOT NULL UNIQUE COMMENT 'Name of the job role',
+    description TEXT COMMENT 'Description or details of the job role'
+);
+
+CREATE TABLE employee (
+    id INT AUTO_INCREMENT PRIMARY KEY COMMENT 'Unique identifier for each employee',
+    first_name VARCHAR(50) NOT NULL COMMENT 'First name of the employee',
+    last_name VARCHAR(50) NOT NULL COMMENT 'Last name of the employee',
+    middle_name VARCHAR(50) NOT NULL COMMENT 'Middle name of the employee',
+    email VARCHAR(100) UNIQUE COMMENT 'Email address of the employee',
+    phone_number VARCHAR(20) COMMENT 'Phone number of the employee',
+    hire_date DATE COMMENT 'Date when the employee was hired',
+    termination_date DATE COMMENT 'Date when the employee left',
+    role_id INT COMMENT 'Foreign key referencing the job role assigned to the employee',
+    FOREIGN KEY (role_id) REFERENCES job_role(id)
+);
+
+CREATE TABLE vendor (
+    id INT AUTO_INCREMENT PRIMARY KEY COMMENT 'Unique identifier for each vendor',
+    vendor_name VARCHAR(100) NOT NULL COMMENT 'Name of the vendor',
+    vendor_type INT,
+    contact_person VARCHAR(100) COMMENT 'Contact person at the vendor company',
+    phone_number VARCHAR(20) COMMENT 'Phone number of the vendor',
+    email VARCHAR(100) COMMENT 'Email address of the vendor',
+    notes TEXT COMMENT 'Additional notes or comments about the vendor'
+    FOREIGN KEY (vendor_type) REFERENCES vendor_type(id)
+);
+
+CREATE TABLE vendor_type (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) UNIQUE NOT NULL,
+    description TEXT
+);
+
+
+
+
+
+
+CREATE TABLE work_order (
+    id INT AUTO_INCREMENT PRIMARY KEY COMMENT 'Unique identifier for each work order',
+    unit_id INT NOT NULL COMMENT 'Foreign key referencing the unit associated with the work order',
+    description TEXT NOT NULL COMMENT 'Description of the work to be performed',
+    maint_type_id INT,
+    request_date DATE DEFAULT NOW() NOT NULL COMMENT 'Date when the work order was requested',
+    requestor_tenant_id INT,
+    requestor_employee_id INT,
+    status ENUM('Open', 'In Progress', 'Completed') NOT NULL COMMENT 'Status of the work order',
+    completion_date DATE COMMENT 'Date when the work order was completed',
+    vendor_id INT COMMENT 'Foreign key referencing the vendor assigned to the work order (if any)',
+    maint_employee_id INT COMMENT ‘The id of internal maintenance employee assigned’,
+    notes TEXT COMMENT 'Additional notes or comments related to the work order',
+    FOREIGN KEY (unit_id) REFERENCES unit(id),
+    FOREIGN KEY (vendor_id) REFERENCES vendor(id),
+    FOREIGN KEY (requestor_tenant_id) REFERENCES tenant(id),
+    FOREIGN KEY (requestor_employee_id) REFERENCES employee(id),
+    FOREIGN KEY (maint_employee_id) REFERENCES employee(id),
+    FOREIGN KEY (maint_type_id) REFERENCES maintenance_type(id)
+);
+
+CREATE TABLE maintenance_type (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) UNIQUE NOT NULL,
+    description TEXT
+);
+
+CREATE TABLE expense (
+    id INT AUTO_INCREMENT PRIMARY KEY COMMENT 'Unique identifier for each expense',
+    expense_date DATE NOT NULL COMMENT 'Date of the expense',
+    description TEXT NOT NULL COMMENT 'Description of the expense',
+    amount DECIMAL(10, 2) NOT NULL COMMENT 'Amount of the expense',
+    category VARCHAR(100) COMMENT 'Category or type of expense',
+    work_order_id INT COMMENT ‘WO ID if related’,
+    notes TEXT COMMENT 'Additional notes or comments related to the expense',
+    FOREIGN KEY (work_order_id) REFERENCES work_order(id)
+);
+
+CREATE TABLE maintenance_work_order (
+    maintenance_id INT NOT NULL,
+    work_order_id INT NOT NULL,
+    PRIMARY KEY (maintenance_id, work_order_id),
+    FOREIGN KEY (work_order_id) REFERENCES work_order(id)
+);
+
+CREATE TABLE tenant_balance (
+    tenant_id INT PRIMARY KEY,
+    balance DECIMAL(10, 2),
+    last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (tenant_id) REFERENCES tenant(id)
+);
+
+CREATE TABLE tenant_transaction (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    tenant_id INT NOT NULL,
+    transaction_date DATE NOT NULL DEFAULT NOW(),
+    description VARCHAR(255),
+    amount DECIMAL(10, 2) NOT NULL,
+    transaction_type ENUM('payment', 'charge'),
+    payment_id INT,
+    fee_id INT,
+    FOREIGN KEY (tenant_id) REFERENCES tenant(id),
+    FOREIGN KEY (payment_id) REFERENCES payment(id),
+    FOREIGN KEY (fee_id) REFERENCES fee(id)
+);
+
+
+
+
+
+
