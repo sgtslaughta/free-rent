@@ -1,3 +1,9 @@
+"""
+@Author: Richard Soto
+@Title: Tenant
+@Description: This module contains the core functions display the tenant page.
+"""
+
 import streamlit as st
 
 from .tenant_funcs.mod_tenant import add_tenant, edit_tenant, get_tenants

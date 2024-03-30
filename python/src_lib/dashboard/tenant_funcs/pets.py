@@ -1,3 +1,9 @@
+"""
+@Author: Richard Soto
+@Title: Pets
+@Description: This module contains the functions to manage the pets for a tenant.
+"""
+
 from time import sleep
 
 import streamlit as st

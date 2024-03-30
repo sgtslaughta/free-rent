@@ -1,3 +1,9 @@
+"""
+@Author: Richard Soto
+@Title: mod_tenant
+@Description: This module contains the functions to add/edit/delete tenants.
+"""
+
 from datetime import datetime
 from time import sleep
 

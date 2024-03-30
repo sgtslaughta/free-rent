@@ -1,3 +1,8 @@
+"""
+@Author: Richard Soto
+@Title: Vehicles
+@Description: This module contains the functions to manage the vehicles for a tenant.
+"""
 from datetime import datetime
 from time import sleep
 

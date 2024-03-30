@@ -1,3 +1,10 @@
+"""
+@Author: Richard Soto
+@Title: Login
+@Description: This module contains the core functions to display the login page, will replace with a more secure login
+function in the future.
+"""
+
 import streamlit as st
 
 from src_lib.dashboard import page as dashboard

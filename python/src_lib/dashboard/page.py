@@ -1,3 +1,9 @@
+"""
+@Author: Richard Soto
+@Title: Page
+@Description: This module contains the core functions to display the main page.
+"""
+
 import streamlit as st
 
 from .dash import show as show_dashboard
