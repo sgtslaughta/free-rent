@@ -31,7 +31,6 @@ def show(container):
         st.session_state.edit_tenant = False
     if "deleting_tenant" not in st.session_state:
         st.session_state.deleting_tenant = False
-    container.button("Refresh Data", key="refresh_tenants")
     container.subheader("Tenants", divider="green")
 
     all_tab, by_unit_tab = container.tabs(["All Tenants", "By Unit"])
@@ -41,7 +40,6 @@ def show(container):
 
 
 def show_all_tenants(container, tenants):
-    container.metric("Count", len(tenants))
     container.markdown("*Hover over table then click magnifying glass to search*")
     col1, col2 = container.columns(2)
     col_to_search = col2.selectbox("Search Column", tenants.columns, index=1)
