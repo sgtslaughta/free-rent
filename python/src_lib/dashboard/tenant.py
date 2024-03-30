@@ -1,14 +1,24 @@
 import streamlit as st
 
-from .tenant_funcs.alter_source import add_tenant, edit_tenant
+from .tenant_funcs.mod_tenant import add_tenant, edit_tenant, get_tenants
+from .tenant_funcs.pets import show as show_pets
+from .tenant_funcs.vechicles import show as show_vehicles
 
 
-def get_tenants():
-    st.cache_data.clear()
-    return st.session_state.conn.query("SELECT * FROM tenant")
+def filter_dataframe(data, query, column="first_name"):
+    """Filter DataFrame based on user input."""
+    if query:
+        return data[data[column].str.contains(query, case=False)]
+    else:
+        return data
 
 
 def show(container):
+    if "tenants" not in st.session_state:
+        st.session_state.tenants = None
+        get_tenants()
+    if "selected_tenant" not in st.session_state:
+        st.session_state.selected_tenant = None
     if "adding_tenant" not in st.session_state:
         st.session_state.adding_tenant = False
     if "edit_tenant" not in st.session_state:
@@ -20,18 +30,31 @@ def show(container):
 
     all_tab, by_unit_tab = container.tabs(["All Tenants", "By Unit"])
 
-    tenants = get_tenants()
-    show_all_tenants(all_tab, tenants)
+    get_tenants()
+    show_all_tenants(all_tab, st.session_state.tenants)
 
 
 def show_all_tenants(container, tenants):
     container.metric("Count", len(tenants))
     container.markdown("*Hover over table then click magnifying glass to search*")
-    container.data_editor(tenants, hide_index=True, key="tenants")
-    add_b, edit_b, del_b = container.columns(3)
-    if add_b.button("Add", use_container_width=True) or st.session_state.adding_tenant:
+    col1, col2 = container.columns(2)
+    col_to_search = col2.selectbox("Search Column", tenants.columns, index=1)
+    search_query = col1.text_input("Search Query", placeholder="Search...",
+                                   autocomplete="on")
+
+    tenants = filter_dataframe(tenants, search_query, col_to_search)
+    container.data_editor(tenants, hide_index=True, key="tenants_table")
+    add_b, edit_b = container.columns(2)
+    if add_b.button("Add New Tenant", use_container_width=True) or st.session_state.adding_tenant:
+        st.session_state.edit_tenant = False
         add_tenant(container)
-    if edit_b.button("Edit Tenant", use_container_width=True) or st.session_state.edit_tenant:
-        edit_tenant(container, tenants)
-    if del_b.button("Delete Selected", use_container_width=True):
-        pass
+    if edit_b.button("View Tenant Details", use_container_width=True) or st.session_state.edit_tenant:
+        st.session_state.adding_tenant = False
+        edit_c = container.container(border=True)
+        edit_tenant(edit_c, tenants)
+        col1, col2 = edit_c.columns(2)
+        show_pets(col1)
+        show_vehicles(col2)
+    else:
+        st.session_state.adding_tenant = False
+        st.session_state.edit_tenant = False
